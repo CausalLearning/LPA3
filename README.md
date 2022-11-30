@@ -3,7 +3,7 @@
 Official implementation:
 - [Adversarial Auto-Augment with Label Preservation: A Representation Learning Principle Guided Approach](https://arxiv.org/pdf/2211.00824.pdf), NeurIPS 2022. 
 
-In the project, we apply LPA3 to FixMatch and PES as an illustration, and you can apply LPA3 to your own tasks.
+In the project, we apply LPA3 to FixMatch and PES as an illustration, and you can apply LPA3 to your own representation learning tasks.
 
 ## Requirments
 * Python 3.8
