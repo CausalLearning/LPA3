@@ -36,3 +36,26 @@ python -m torch.distributed.launch --nproc_per_node 4 fixmatch_LPA3.py  --seed 1
 python -m torch.distributed.launch --nproc_per_node 4 fixmatch_LPA3.py  --seed 1 --dataset cifar100 --num-labeled 10000 --expand-labels --amp --opt_level O2 --wdecay 0.001 --out ./results/cifar100_10000_lpa3 --batch-size 16 --bound 0.02 --lam 1 --ratio 0.9;
 python -m torch.distributed.launch --nproc_per_node 4 fixmatch_LPA3.py --arch 'wideresnetVar' --seed 1 --dataset stl10 --expand-labels --amp --opt_level O2 --out ./results/stl10_lpa3 --batch-size 16 --bound 0.002 --lam 1 --ratio 0.9;
 ```
+
+## PES
+```
+cd PES
+```
+* To train PES baseline on CIFAR10 and CIFAR100:
+```
+python PES.py --dataset cifar10 --data_path ../data/ --lambda_u 15 --noise_rate 0.5
+python PES.py --dataset cifar10 --data_path ../data/ --lambda_u 25 --noise_rate 0.8
+python PES.py --dataset cifar10 --data_path ../data/ --lambda_u 25 --noise_rate 0.9
+python PES.py --dataset cifar100 --data_path ../data/ --lambda_u 75 --noise_rate 0.5
+python PES.py --dataset cifar100 --data_path ../data/ --lambda_u 100 --noise_rate 0.8
+python PES.py --dataset cifar100 --data_path ../data/ --lambda_u 100 --noise_rate 0.9
+```
+* To train PES with LPA3 on CIFAR10 and CIFAR100:
+```
+python PES_LPA3.py --dataset cifar10 --data_path ../data/  --noise_rate 0.5 --lambda_u 7.5
+python PES_LPA3.py --dataset cifar10 --data_path ../data/  --noise_rate 0.8 --lambda_u 25
+python PES_LPA3.py --dataset cifar10 --data_path ../data/  --noise_rate 0.9 --lambda_u 25 --bound 0.002
+python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.5 --lambda_u 37.5
+python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.8 --lambda_u 100
+python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.9 --lambda_u 100
+```
