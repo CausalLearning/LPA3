@@ -61,3 +61,9 @@ python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.5 --l
 python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.8 --lambda_u 100
 python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.9 --lambda_u 100
 ```
+
+## Options
+* ```--bound``` The adversarial perturbation bound.
+* ```--num_iterations``` Optimization iterations in Fast Lagrangian Algorithm.
+* ```--lam``` Lambda in Fast Lagrangian Algorithm.
+* ```--ratio``` Data selection ratio to apply LPA3.
