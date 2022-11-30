@@ -67,3 +67,13 @@ python PES_LPA3.py --dataset cifar100 --data_path ../data/  --noise_rate 0.9 --l
 * ```--num_iterations``` Optimization iterations in Fast Lagrangian Algorithm.
 * ```--lam``` Lambda in Fast Lagrangian Algorithm.
 * ```--ratio``` Data selection ratio to apply LPA3.
+
+## Citation
+If you find this project helpful, please consider to cite the following paper:
+```
+@inproceedings{yangadversarial,
+  title={Adversarial Auto-Augment with Label Preservation: A Representation Learning Principle Guided Approach},
+  author={Yang, Kaiwen and Sun, Yanchao and Su, Jiahao and He, Fengxiang and Tian, Xinmei and Huang, Furong and Zhou, Tianyi and Tao, Dacheng},
+  booktitle={Advances in Neural Information Processing Systems}
+}
+```
