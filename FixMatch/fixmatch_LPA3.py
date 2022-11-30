@@ -464,6 +464,7 @@ def main():
             pseudo_label = torch.softmax(logits_u_w.detach() / args.T, dim=-1)
             max_probs, targets_u = torch.max(pseudo_label, dim=-1)
             mask = (max_probs.ge(args.threshold)).float()
+            mask_lpa3 = (max_probs[mask_smooth].ge(args.threshold)).float()
 
             l_cs = (F.cross_entropy(logits_u_s, targets_u, reduction='none')* mask).mean()
             ##
@@ -472,7 +473,7 @@ def main():
                 _, targets_adv = torch.max(logits_adv, 1)
                 prob_adv = torch.softmax(logits_adv / args.T, dim=-1)
                 y_adv = torch.log(torch.gather(prob_adv, 1, targets_u[mask_smooth].view(-1, 1)).squeeze(dim=1))
-                l_adv = F.cross_entropy(logits_adv, targets_u[mask_smooth])
+                l_adv = (F.cross_entropy(logits_adv, targets_u[mask_smooth], reduction='none')* mask_lpa3).mean()
 
             if train_adv:
                 loss = l_ce + l_cs + l_adv
