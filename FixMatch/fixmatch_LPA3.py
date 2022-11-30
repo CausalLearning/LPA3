@@ -472,7 +472,7 @@ def main():
                 _, targets_adv = torch.max(logits_adv, 1)
                 prob_adv = torch.softmax(logits_adv / args.T, dim=-1)
                 y_adv = torch.log(torch.gather(prob_adv, 1, targets_u[mask_smooth].view(-1, 1)).squeeze(dim=1))
-                l_adv = F.cross_entropy(logits_adv, targets_u[mask_smooth], reduction='none')
+                l_adv = F.cross_entropy(logits_adv, targets_u[mask_smooth])
 
             if train_adv:
                 loss = l_ce + l_cs + l_adv
