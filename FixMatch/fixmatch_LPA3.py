@@ -204,6 +204,7 @@ def main():
     parser.add_argument('--ratio', default=0.1, type=float, help='data selection ratio')
     parser.add_argument('--num_iterations', default=5, type=int, help='fast lagrangian iterations')
     parser.add_argument('--lam', default=0.1, type=float, help='fast lagrangian lambda')
+    parser.add_argument('--threshold_lpa3', default=0.9, type=float, help='pseudo label threshold for lpa3 data')
     args = parser.parse_args()
     global best_acc
 
@@ -464,7 +465,7 @@ def main():
             pseudo_label = torch.softmax(logits_u_w.detach() / args.T, dim=-1)
             max_probs, targets_u = torch.max(pseudo_label, dim=-1)
             mask = (max_probs.ge(args.threshold)).float()
-            mask_lpa3 = (max_probs[mask_smooth].ge(args.threshold)).float()
+            mask_lpa3 = (max_probs[mask_smooth].ge(args.threshold_lpa3)).float()
 
             l_cs = (F.cross_entropy(logits_u_s, targets_u, reduction='none')* mask).mean()
             ##
