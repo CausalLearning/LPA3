@@ -19,7 +19,7 @@ from apex.parallel import convert_syncbn_model
 from tqdm import tqdm
 import torch.distributed as dist
 from dataset.make_data import DATASET_GETTERS, mu_cifar100, std_cifar100, mu_cifar10, std_cifar10, mu_stl10, std_stl10, clamp
-from utils import AverageMeter, accuracy, setup_logger
+from utils import AverageMeter, accuracy, setup_logger, normalize_flatten_features
 import random
 import models
 import pdb
@@ -155,7 +155,7 @@ def main():
     parser.add_argument('--arch', default='wideresnet', type=str,
                         choices=['wideresnet', 'wideresnetVar'],
                         help='dataset name')
-    parser.add_argument('--total-steps', default=2**20, type=int,
+    parser.add_argument('--total-steps', default=2**18, type=int,
                         help='number of total steps to run')
     parser.add_argument('--eval-step', default=1024, type=int,
                         help='number of eval steps to run')
@@ -182,8 +182,6 @@ def main():
     parser.add_argument('--T', default=1, type=float,
                         help='pseudo label temperature')
     parser.add_argument('--threshold', default=0.95, type=float,
-                        help='pseudo label threshold')
-    parser.add_argument('--our_threshold', default=0.9, type=float,
                         help='pseudo label threshold')
     parser.add_argument('--out', default='result',
                         help='directory to output the result')
@@ -466,7 +464,6 @@ def main():
             pseudo_label = torch.softmax(logits_u_w.detach() / args.T, dim=-1)
             max_probs, targets_u = torch.max(pseudo_label, dim=-1)
             mask = (max_probs.ge(args.threshold)).float()
-            mask_1 = max_probs[mask_smooth].ge(args.our_threshold)
 
             l_cs = (F.cross_entropy(logits_u_s, targets_u, reduction='none')* mask).mean()
             ##
@@ -475,7 +472,7 @@ def main():
                 _, targets_adv = torch.max(logits_adv, 1)
                 prob_adv = torch.softmax(logits_adv / args.T, dim=-1)
                 y_adv = torch.log(torch.gather(prob_adv, 1, targets_u[mask_smooth].view(-1, 1)).squeeze(dim=1))
-                l_adv = (F.cross_entropy(logits_adv, targets_u[mask_smooth], reduction='none')* mask_1).mean()
+                l_adv = F.cross_entropy(logits_adv, targets_u[mask_smooth], reduction='none')
 
             if train_adv:
                 loss = l_ce + l_cs + l_adv
@@ -503,19 +500,19 @@ def main():
                                  'Adv/mem_tc': mem_tc.mean().item(),
                                  'His/mem_tc': wandb.Histogram(hismem_tc.cpu().detach().numpy(), num_bins=512),
                                  'lr': optimizer.param_groups[0]['lr']})
-                        if run_adv and mask_1.sum()>0:
+                        if run_adv and mask_smooth.sum()>0:
                             pip = (normalize_flatten_features(feat_adv) - \
                                    normalize_flatten_features(feat_ori)[mask_smooth].detach()).norm(dim=1)
-                            prec_pesudo_adv = (targets_u[mask_smooth] == targets_adv)[mask_1].float().mean()
-                            l2_norm = (inputs_adv[mask_1] - (inputs_u_w[mask_smooth])[mask_1]).reshape(
-                                (inputs_u_w[mask_smooth])[mask_1].shape[0], -1).norm(dim=1)
+                            prec_pesudo_adv = (targets_u[mask_smooth] == targets_adv).float().mean()
+                            l2_norm = (inputs_adv - inputs_u_w[mask_smooth]).reshape(
+                                (inputs_u_w[mask_smooth]).shape[0], -1).norm(dim=1)
                             run.log({'loss/l_adv': l_adv.data.item(),
-                                 'group1/y_adv': y_adv[mask_1].mean().cpu().detach().numpy(),
-                                 'group1/y_w': (y_w[mask_smooth])[mask_1].mean().cpu().detach().numpy(),
-                                 'group1/pip': pip[mask_1].mean().cpu().detach().numpy(),
-                                 'group1/pesudo_acc': (pesudo_accuracy[mask_smooth])[mask_1].mean().cpu().detach().numpy(),
+                                 'group1/y_adv': y_adv.mean().cpu().detach().numpy(),
+                                 'group1/y_w': (y_w[mask_smooth]).mean().cpu().detach().numpy(),
+                                 'group1/pip': pip.mean().cpu().detach().numpy(),
+                                 'group1/pesudo_acc': (pesudo_accuracy[mask_smooth]).mean().cpu().detach().numpy(),
                                  'pesudo/prec_adv': prec_pesudo_adv.item(),
-                                 'group1/num': mask_1.sum().cpu().detach().numpy(),
+                                 'group1/num': mask_smooth.sum().cpu().detach().numpy(),
                                  'group1/l2_norm': torch.mean(l2_norm).cpu().detach().numpy(),
                                  'group1/l2_norm_his': wandb.Histogram(l2_norm.cpu().detach().numpy(), num_bins=512)}, commit=False)
             optimizer.zero_grad()

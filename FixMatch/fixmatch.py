@@ -79,7 +79,7 @@ def main():
     parser.add_argument('--arch', default='wideresnet', type=str,
                         choices=['wideresnet', 'resnext'],
                         help='dataset name')
-    parser.add_argument('--total-steps', default=2**20, type=int,
+    parser.add_argument('--total-steps', default=2**18, type=int,
                         help='number of total steps to run')
     parser.add_argument('--eval-step', default=1024, type=int,
                         help='number of eval steps to run')
